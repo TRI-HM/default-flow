@@ -4,9 +4,17 @@ using UnityEngine;
 
 public class Capsule : MonoBehaviour, IInteractable
 {
+    public GameObject ObjPopupInfo;
+
+    void Start()
+    {
+        if (ObjPopupInfo != null)
+        {
+            ObjPopupInfo.SetActive(false);
+        }
+    }
     public void OnInteract()
     {
-        // Thực hiện hành động khi đối tượng được tương tác
-        Debug.LogWarning("Capsule đã được tương tác!");
+        ObjPopupInfo.SetActive(true);
     }
 }
