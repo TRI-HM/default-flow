@@ -6,9 +6,9 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using System.IO;
-
 public class PlayerDataManager : MonoBehaviour
 {
+
     [System.Serializable]
     public class PlayerData
     {
@@ -27,6 +27,7 @@ public class PlayerDataManager : MonoBehaviour
     public TMP_InputField playerMail;
     public Button confirmButton;
     public GameObject registerPanel;
+    public TMP_Text welcomeText; // Thành phần UI để hiển thị thông tin
 
     void Start()
     {
@@ -51,23 +52,34 @@ public class PlayerDataManager : MonoBehaviour
 
         PlayerData playerData = new PlayerData(name, phone, mail);
 
-        // Convert player data to JSON string
         string json = JsonUtility.ToJson(playerData);
-        string filePath = Application.persistentDataPath + "/playerData.json";
+        PlayerPrefs.SetString("playerData", json);
+        PlayerPrefs.Save();
 
-        // Emit data to server 
         SocketInstance.Instance.RegisterEmitSocketEvent("userRegister", json);
 
-        File.WriteAllText(filePath, json);
-        Debug.Log("Player data saved to: " + filePath);
-
+        LoadAndDisplayPlayerData();
         registerPanel.SetActive(false);
-        Debug.Log("Player data: " + json);
-
     }
-
-    public void LoadScene2()
+    void LoadAndDisplayPlayerData()
     {
-        SceneManager.LoadScene("Navigation");
+        string jsonData = PlayerPrefs.GetString("playerData", string.Empty);
+        if (jsonData != string.Empty)
+        {
+            PlayerData playerData = JsonUtility.FromJson<PlayerData>(jsonData);
+            welcomeText.text = "Welcome, " + playerData.name;
+        }
+        else
+        {
+            welcomeText.text = "Welcome, Guest!\n.";
+            Debug.LogWarning("Không tìm thấy file playerData.json trong PlayerPrefs.");
+        }
+    }
+    void OnApplicationQuit()
+    {
+        PlayerPrefs.DeleteKey("playerData");
+        PlayerPrefs.Save();
+        Debug.LogWarning("Dữ liệu playerData đã được xóa khỏi PlayerPrefs.");
+
     }
 }

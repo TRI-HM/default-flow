@@ -17,29 +17,39 @@ public class ButtonBlueClick : MonoBehaviour, IPointerDownHandler, IPointerUpHan
 
     // Active result when animation finished
     public GameObject resultObject; // Đối tượng kết quả
+    private bool isResultActive = false; // Biến kiểm tra trạng thái của đối tượng kết quả
 
 
     private void Start()
     {
         originalPosition = transform.localPosition;
         targetPosition = originalPosition;
+        resultObject.SetActive(false);
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
         targetPosition = originalPosition + new Vector3(0, -pressDepth, 0);
+        // Nếu có animator đầu tiên, chạy animation đầu tiên
+        if (firstAnimator != null && !isResultActive)
+        {
+            // Kiểm tra xem animation đầu tiên đã chạy chưa
+            if (firstAnimator.GetCurrentAnimatorStateInfo(0).IsName(firstAnimation))
+            {
+                return; // Nếu animation đã chạy, không làm gì cả
+            }
+
+            // Nếu animation chưa chạy, bắt đầu chạy animation đầu tiên
+            isResultActive = true; // Đánh dấu là đã chạy animation đầu tiên
+            firstAnimator.Play(firstAnimation);
+            StartCoroutine(WaitForAnimation(firstAnimator, firstAnimation));
+        }
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
         targetPosition = originalPosition;
 
-        // Nếu có animator đầu tiên, chạy animation đầu tiên
-        if (firstAnimator != null)
-        {
-            firstAnimator.Play(firstAnimation);
-            StartCoroutine(WaitForAnimation(firstAnimator, firstAnimation));
-        }
     }
 
     private void Update()
